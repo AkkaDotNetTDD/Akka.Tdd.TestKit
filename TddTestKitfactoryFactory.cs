@@ -96,7 +96,16 @@ namespace Akka.Tdd.TestKit
             }
         }
 
-        public  T AwaitAssert<T>(Func<T> action, int durationMilliseconds, int sleepIntervalMilliseconds = 50)
+        public void AwaitAssert(Action action, int durationMilliseconds = 3000, int sleepIntervalMilliseconds = 50)
+        {
+            AwaitAssert(() =>
+            {
+                action();
+                return true;
+            },  durationMilliseconds, sleepIntervalMilliseconds);
+        }
+
+        public  T AwaitAssert<T>(Func<T> action, int durationMilliseconds=3000, int sleepIntervalMilliseconds = 50)
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
             var now = DateTime.Now;

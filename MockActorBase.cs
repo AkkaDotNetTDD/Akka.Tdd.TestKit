@@ -28,8 +28,8 @@ namespace Akka.Tdd.TestKit
             ReceiveAny(message =>
             {
                 var myState = GetState();
-                var results = myState.MockSetUpMessages.Where(s => s.WhenInComing == message.GetType() && s.Owner == GetType()).ToList();
-                ProcessMockSetUpMessage(results);
+                var results = myState.MockSetUpMessages.Where(s => (s.WhenInComing == message.GetType() || s.WhenInComing == typeof(InternalAnyMessage)) && s.Owner == GetType()).ToList();
+                ProcessMockSetUpMessage(results,message);
             });
         }
 
@@ -40,21 +40,21 @@ namespace Akka.Tdd.TestKit
             ProcessMockSetUpMessage(result);
         }
 
-        private void ProcessMockSetUpMessage(List<MockSetUpMessage> result)
+        private void ProcessMockSetUpMessage(List<MockSetUpMessage> result,object message=null)
         {
             if (!result.Any()) return;
 
             foreach (var response in result)
             {
                 if (response == null) return;
-                Execute(response.RespondWith, response);
+                Execute(response.RespondWith,  message);
             }
         }
 
         private void Execute(object response, object message)
         {
             var lambda = response as ItShouldExecuteLambda;
-            lambda?.Operation(new ActorAccess(Context, InjectedActors, this, Stash, Become));
+            lambda?.Operation(new ActorAccess(Context, InjectedActors, this, Stash, Become, message));
         }
 
         protected override void PreStart()
